@@ -1,0 +1,19 @@
+{
+    "name": "jlorente/yii2-model-image",
+    "description": "A Yii2 extension that allows the user to attach an image to a model and optionally resize it",
+    "keywords": ["yii2", "image", "model", "resize", "plugin"],
+    "homepage": "https://github.com/jlorente/yii2-model-image",
+    "type": "yii2-extension",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Jose Lorente Martin",
+            "email": "jose.lorente.martin@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "jlorente\\modelimage\\": "src/"
+        }
+    }
+}
