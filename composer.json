@@ -11,6 +11,11 @@
             "email": "jose.lorente.martin@gmail.com"
         }
     ],
+    "require": {
+        "php": ">=5.4.0",
+        "ext-imagick": "*",
+        "kartik-v/yii2-widget-fileinput": "*"
+    },
     "autoload": {
         "psr-4": {
             "jlorente\\modelimage\\": "src/"

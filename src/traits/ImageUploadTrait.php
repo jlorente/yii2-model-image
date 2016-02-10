@@ -10,13 +10,14 @@
 namespace jlorente\modelimage\traits;
 
 use yii\web\UploadedFile;
-use custom\db\exceptions\SaveException;
-use common\exceptions\FileException;
+use jlorente\modelimage\exceptions\SaveException;
+use jlorente\modelimage\exceptions\ImageUploadException;
 use Yii;
 use Imagick;
 
 /**
- * 
+ * Base trait that provides the image upload functionality.
+
  * @author José Lorente <jose.lorente.martin@gmail.com>
  */
 trait ImageUploadTrait {
@@ -55,7 +56,7 @@ trait ImageUploadTrait {
     /**
      * Resizes the image and uploads the image.
      * 
-     * @throws FileException
+     * @throws ImageUploadException
      */
     protected function resizeAndUpload() {
         $this->deleteImage();
@@ -68,19 +69,19 @@ trait ImageUploadTrait {
             $message = Yii::t('jlorente/modelimage', 'The directory to store the image can not be created [{dir}]. Please check the path and the write permissions of this directory.', [
                         'dir' => $dir
             ]);
-            $this->addError('image', $message);
-            throw new FileException($message);
+            $this->owner()->addError('image', $message);
+            throw new ImageUploadException($message);
         }
         if ($image->writeImage(Yii::getAlias(Yii::$app->params['uploadsPath'] . $name)) === false) {
             $message = Yii::t('jlorente/modelimage', 'An error ocurred when writting the image to path [{path}]. Please check the write permission of the directory.', [
                         'path' => Yii::$app->params['uploadsPath'] . $name
             ]);
-            $this->addError('image', $message);
-            throw new FileException($message);
+            $this->owner()->addError('image', $message);
+            throw new ImageUploadException($message);
         }
         $image->destroy();
-        $this->$imgAttribute = $name;
-        if ($this->update([$imgAttribute]) === false) {
+        $this->owner()->$imgAttribute = $name;
+        if ($this->owner()->update([$imgAttribute]) === false) {
             throw new SaveException($this);
         }
     }
@@ -92,27 +93,45 @@ trait ImageUploadTrait {
      */
     public function getImageUrl() {
         $imgAttribute = $this->imagePathAttribute();
-        return empty($this->$imgAttribute) ? null : (Yii::$app->params['uploadsUrl'] . $this->$imgAttribute);
+        return empty($this->owner()->$imgAttribute) ? null : (Yii::$app->params['uploadsUrl'] . $this->owner()->$imgAttribute);
     }
 
     /**
      * Deletes the stored image.
      * 
-     * @throws FileException
+     * @throws ImageUploadException
      */
     public function deleteImage() {
         $imgAttribute = $this->imagePathAttribute();
-        if ($this->$imgAttribute !== null) {
-            $path = Yii::getAlias(Yii::$app->params['uploadsPath'] . $this->$imgAttribute);
+        if ($this->owner()->$imgAttribute !== null) {
+            $path = Yii::getAlias(Yii::$app->params['uploadsPath'] . $this->owner()->$imgAttribute);
             if (@unlink($path) === false) {
-                $this->addError('image', Yii::t('item', 'No se ha podido eliminar la imagen anterior.'));
-                throw new FileException('An error has ocurred when deleting the last uploaded image.');
+                $this->owner()->addError('image', Yii::t('item', 'No se ha podido eliminar la imagen anterior.'));
+                throw new ImageUploadException('An error has ocurred when deleting the last uploaded image.');
             }
-            $this->$imgAttribute = null;
-            if ($this->update([$imgAttribute]) === false) {
+            $this->owner()->$imgAttribute = null;
+            if ($this->owner()->update([$imgAttribute]) === false) {
                 throw new SaveException($this);
             }
         }
+    }
+
+    /**
+     * Returns the owner of the behavior. By default the object itself.
+     * 
+     * @return static
+     */
+    public function owner() {
+        return $this;
+    }
+
+    /**
+     * Gets the name for storing the image.
+     * 
+     * @return string
+     */
+    public function getImageBaseName() {
+        return (string) md5(uniqid() . time());
     }
 
     /**

@@ -12,12 +12,11 @@ namespace jlorente\modelimage\traits;
 use yii\web\UploadedFile;
 use custom\db\exceptions\SaveException;
 use Exception;
-use common\exceptions\FileException;
 use Yii;
-use Imagick;
 use yii\log\Logger;
 
 /**
+ * Trait that attaches the functionallity of uploading the image by using a trait.
  * 
  * @author José Lorente <jose.lorente.martin@gmail.com>
  */
@@ -66,21 +65,5 @@ trait ImageModelTrait {
     public function delete() {
         $this->deleteImage();
         return parent::delete();
-    }
-
-    /**
-     * 
-     * @return string
-     */
-    public function getImageBaseName() {
-        return (string) md5(uniqid() . time());
-    }
-
-    /**
-     * 
-     * @return string
-     */
-    public function imagePathAttribute() {
-        return 'img_path';
     }
 }
